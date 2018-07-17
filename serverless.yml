@@ -1,0 +1,64 @@
+
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: AWSLambdaPostgresConnection
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs8.10 # Choose development environment according to your taste between C#, Node.js, Python, Go and Java8
+  stage: dev # Choose stage for development or production.
+  region: rds_region # Choose specific AWS region where the RDS instance is.
+  environment: # Add DB Configuration values as environment variables.
+    DB_USER: "db_name"
+    DB_PASSWORD: "db_password"
+    DB_NAME: "db_name"
+    DB_HOST: "db_rds_host_name"
+    DB_PORT: 5432
+    DB_MAX_CONNECTIONS: 10
+    DB_IDLE_TIMEOUT: 300000
+    DB_CONNECTION_TIMEOUT: 1000
+  vpc: # Add security group and subnets configured for RDS instance on AWS Console.
+    securityGroupIds:
+      - sg-xxxxxx
+    subnetIds:
+      - subnet-xxxxxx
+      - subnet-xxxxxx
+
+functions:
+  connectWithPostgres:
+    handler: app.connectWithPostgres # Add name of the Lambda function
+    iamRoleStatements:
+      - Effect: Allow
+        Resource: "*"
+        Action:
+          - ec2:CreateNetworkInterface
+          - ec2:DescribeNetworkInterfaces
+          - ec2:DetachNetworkInterface
+          - ec2:DeleteNetworkInterface
+          - logs:CreateLogGroup
+          - logs:CreateLogStream
+          - logs:PutLogEvents
+    events: # events trigger lambda functions
+      - http: # this is an API Gateway HTTP event trigger
+          path: /
+          method: ANY
+          cors: true
+      - http: # all routes get proxied to the Express router
+          path: /{proxy+}
+          method: ANY
+          cors: true
