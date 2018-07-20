@@ -1,6 +1,6 @@
 "use strict";
 
-//Inclide required node modules and db configuration values
+//Include required node modules and db configuration values
 const pg = require("pg");
 const databaseUser = process.env.DB_USER;
 const databasePassword = process.env.DB_PASSWORD;
@@ -32,16 +32,19 @@ exports.connectWithPostgres = (event, context, callback) => {
   pool.connect(function(err, client, done) {
     console.log("Postgres Connection Status:", "Initiated");
     if (err) {
-      console.log(
-        "Postgres Connection Status:",
-        "Error connecting to pg server" + err.stack
-      );
+      let errorMessage = "Error connecting to pg server";
+
+      console.log("Postgres Connection Status:", errorMessage + err.stack);
 
       const response = {
-        statusCode: 200,
+        statusCode: 500,
+        headers: {
+          "Content-Type": "*/*"
+        },
         body: JSON.stringify({
-          message: "Error connecting to pg server",
-          input: err.stack
+          error: {
+            message: errorMessage
+          }
         })
       };
 
@@ -51,14 +54,6 @@ exports.connectWithPostgres = (event, context, callback) => {
         "Postgres Connection Status:",
         "Connection established with pg db server"
       );
-
-      const response = {
-        statusCode: 200,
-        body: JSON.stringify({
-          message: "",
-          input: done
-        })
-      };
 
       //Write a simple query to verify the connection.
       var a = client.query("SELECT COUNT(*) FROM users", (err, res) => {
@@ -73,7 +68,18 @@ exports.connectWithPostgres = (event, context, callback) => {
         } else {
           console.error("Postgres Query Status:", "Got query results" + res);
 
-          callback(null, { total_users: res["rows"][0]["count"] });
+          let users_count = res["rows"][0]["count"];
+          const response = {
+            statusCode: 200,
+            headers: {
+              "Content-Type": "*/*"
+            },
+            body: JSON.stringify({
+              total_users: users_count
+            })
+          };
+
+          callback(null, response);
         }
 
         //Make sure to release the client and end the postgres pool after the work is done.
