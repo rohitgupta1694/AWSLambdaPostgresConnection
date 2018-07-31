@@ -22,7 +22,7 @@ provider:
   name: aws
   runtime: nodejs8.10 # Choose development environment according to your taste between C#, Node.js, Python, Go and Java8
   stage: dev # Choose stage for development or production.
-  region: rds_region # Choose specific AWS region where the RDS instance is.
+  region: rds_region # Choose specific AWS region for lambda function where the other AWS service instance resides.
   environment: # Add DB Configuration values as environment variables.
     DB_USER: "db_name"
     DB_PASSWORD: "db_password"
